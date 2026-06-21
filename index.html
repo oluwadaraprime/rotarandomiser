@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Church Tech &amp; Rehearsal Rota</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="theme-purple">
+    <div class="app">
+      <header class="page-header">
+        <p class="eyebrow">Local rota generator</p>
+        <h1>Church Tech &amp; Rehearsal Rota</h1>
+        <p class="subtitle">
+          Build Saturday rehearsal and Sunday service rotas. Your team list and serve counts stay saved in this browser.
+        </p>
+      </header>
+
+      <main class="main-flow">
+        <!-- 1. Rota settings -->
+        <section class="card section-card" aria-labelledby="settings-heading">
+          <div class="section-card__head">
+            <h2 id="settings-heading">Rota settings</h2>
+            <p class="section-lead">Choose the date, export theme, and Sunday service type before generating.</p>
+          </div>
+
+          <div class="settings-grid">
+            <div class="field">
+              <label for="rota-date">Service date</label>
+              <input type="date" id="rota-date" />
+            </div>
+            <div class="field">
+              <label for="theme-select">Export colour theme</label>
+              <select id="theme-select" aria-label="Export colour theme">
+                <option value="theme-purple">Purple</option>
+                <option value="theme-orange">Orange</option>
+                <option value="theme-green">Green</option>
+                <option value="theme-red">Red</option>
+                <option value="theme-blue">Blue</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="sunday-service-type">Sunday service type</label>
+              <select id="sunday-service-type">
+                <option value="standard">Standard</option>
+                <option value="prayer">Prayer Sunday</option>
+                <option value="family">Family Sunday</option>
+                <option value="youth">Youth Sunday</option>
+                <option value="thanksgiving">Thanksgiving Sunday</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="action-group" aria-label="Generate rotas">
+            <p class="action-group__label">Generate rotas</p>
+            <div class="action-group__buttons">
+              <button type="button" id="btn-generate-saturday" class="btn btn-primary">
+                Generate Saturday
+              </button>
+              <button type="button" id="btn-generate-sunday" class="btn btn-secondary">
+                Generate Sunday
+              </button>
+            </div>
+            <p class="helper-text">Generate each rota separately. You can regenerate or export after preview appears below.</p>
+          </div>
+        </section>
+
+        <!-- 2. Team members -->
+        <section class="card section-card" aria-labelledby="team-heading">
+          <div class="section-card__head">
+            <h2 id="team-heading">Team members</h2>
+            <p class="section-lead">Add people one at a time. Changes save automatically to this device.</p>
+          </div>
+
+          <div class="field">
+            <label for="team-add-input">Add a team member</label>
+            <div class="input-action-row">
+              <input
+                type="text"
+                id="team-add-input"
+                placeholder="e.g. Bro Victor"
+                spellcheck="false"
+                autocomplete="off"
+              />
+              <button type="button" id="btn-add-team" class="btn btn-primary">Add</button>
+            </div>
+          </div>
+
+          <div class="team-list-wrap">
+            <div class="team-list-toolbar">
+              <p class="field-label">Full team (<span id="team-count">0</span>)</p>
+              <button
+                type="button"
+                id="btn-toggle-team-list"
+                class="btn btn-secondary btn-compact"
+                aria-expanded="true"
+                aria-controls="team-list-panel"
+              >
+                Hide list
+              </button>
+            </div>
+            <div id="team-list-panel" class="team-list-panel">
+              <ul id="team-list" class="team-list" aria-label="Current team members"></ul>
+            </div>
+          </div>
+
+          <div class="rota-pool-section">
+            <h3 class="subsection-title">Rota assignment pool</h3>
+            <p class="helper-text">
+              By default, rotas use everyone on the full team. Turn on selected pools to pick who is available each week.
+            </p>
+
+            <label class="checkbox-row" for="use-selected-pools">
+              <input type="checkbox" id="use-selected-pools" />
+              <span>Use selected members only (instead of full team)</span>
+            </label>
+
+            <div id="rota-pools-panel" class="rota-pools-panel" hidden>
+              <div class="rota-pool-grid">
+                <div class="rota-pool-card">
+                  <div class="rota-pool-head">
+                    <h4 class="rota-pool-title">Saturday pool (<span id="saturday-pool-count">0</span>)</h4>
+                    <div class="rota-pool-actions">
+                      <button type="button" id="btn-saturday-pool-all" class="btn btn-ghost">Select all</button>
+                      <button type="button" id="btn-saturday-pool-none" class="btn btn-ghost">Clear</button>
+                    </div>
+                  </div>
+                  <div id="saturday-pool-list" class="pool-checklist" role="group" aria-label="Saturday rota pool"></div>
+                </div>
+
+                <div class="rota-pool-card">
+                  <div class="rota-pool-head">
+                    <h4 class="rota-pool-title">Sunday pool (<span id="sunday-pool-count">0</span>)</h4>
+                    <div class="rota-pool-actions">
+                      <button type="button" id="btn-sunday-pool-all" class="btn btn-ghost">Select all</button>
+                      <button type="button" id="btn-sunday-pool-none" class="btn btn-ghost">Clear</button>
+                    </div>
+                  </div>
+                  <div id="sunday-pool-list" class="pool-checklist" role="group" aria-label="Sunday rota pool"></div>
+                </div>
+              </div>
+              <p class="helper-text">Selections save automatically. Only checked names are used when generating each rota.</p>
+            </div>
+          </div>
+
+          <details class="tools-collapse">
+            <summary>Bulk edit tools</summary>
+            <div class="tools-collapse__body">
+              <p class="helper-text">Paste one name per line, then save to replace the entire team list.</p>
+              <label for="team-textarea" class="sr-only">Bulk team list</label>
+              <textarea id="team-textarea" rows="7" spellcheck="false" placeholder="Bro Victor&#10;Bro Simon&#10;Sis Janelle"></textarea>
+              <button type="button" id="btn-save-team" class="btn btn-secondary">Save pasted list</button>
+            </div>
+          </details>
+
+          <div class="danger-zone">
+            <p class="danger-zone__title">Advanced</p>
+            <p class="helper-text">Reset historical serve counts for fairness tracking. This does not remove team members.</p>
+            <button type="button" id="btn-reset-counts" class="btn btn-danger-ghost">Reset all serve counts</button>
+          </div>
+        </section>
+
+        <!-- 3. Preview -->
+        <section class="preview-section" aria-labelledby="preview-heading">
+          <div class="section-card__head section-card__head--standalone">
+            <h2 id="preview-heading">Generated preview</h2>
+            <p class="section-lead">Side-by-side output for Saturday rehearsal and Sunday service. Export when ready.</p>
+          </div>
+
+          <div class="rota-preview-grid">
+            <!-- Saturday -->
+            <article id="saturday-preview-card" class="preview-card" aria-label="Saturday preview">
+              <header class="preview-card__header">
+                <div>
+                  <h3 class="preview-card__title">Saturday rehearsal</h3>
+                  <p id="saturday-preview-meta" class="preview-card__meta">No date selected</p>
+                </div>
+                <span id="saturday-preview-status" class="status-badge">Not generated</span>
+              </header>
+
+              <div id="saturday-empty-state" class="preview-empty">
+                <div class="preview-empty__icon" aria-hidden="true">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+                    <path d="M16 2v4M8 2v4M3 10h18"></path>
+                  </svg>
+                </div>
+                <p class="preview-empty__title">No Saturday rota yet</p>
+                <p class="preview-empty__text">Set a date above, then click <strong>Generate Saturday</strong>.</p>
+              </div>
+
+              <div id="saturday-preview-body" class="preview-body" hidden>
+                <div id="saturday-rota" class="rota-sheet">
+                  <div class="rota-date" id="saturday-date-line">Saturday — select a date</div>
+                  <table class="rota-table saturday-table">
+                    <colgroup>
+                      <col class="col-role" />
+                      <col class="col-main" />
+                      <col class="col-extra" />
+                    </colgroup>
+                    <tbody id="saturday-tbody"></tbody>
+                  </table>
+                </div>
+              </div>
+
+              <footer class="preview-card__footer">
+                <button type="button" id="btn-regenerate-saturday" class="btn btn-secondary" disabled>Regenerate</button>
+                <button type="button" id="btn-export-saturday" class="btn btn-primary" disabled>Export PNG</button>
+              </footer>
+            </article>
+
+            <!-- Sunday -->
+            <article id="sunday-preview-card" class="preview-card" aria-label="Sunday preview">
+              <header class="preview-card__header">
+                <div>
+                  <h3 class="preview-card__title">Sunday service</h3>
+                  <p id="sunday-preview-meta" class="preview-card__meta">Standard service</p>
+                </div>
+                <span id="sunday-preview-status" class="status-badge">Not generated</span>
+              </header>
+
+              <div id="sunday-empty-state" class="preview-empty">
+                <div class="preview-empty__icon" aria-hidden="true">
+                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M4 6h16M4 12h16M4 18h10"></path>
+                  </svg>
+                </div>
+                <p class="preview-empty__title">No Sunday rota yet</p>
+                <p class="preview-empty__text">Choose a service type, then click <strong>Generate Sunday</strong>.</p>
+              </div>
+
+              <div id="sunday-preview-body" class="preview-body" hidden>
+                <div id="sunday-rota" class="rota-sheet">
+                  <div class="rota-banner" id="sunday-banner">
+                    <div class="banner-title" id="sunday-banner-title">TECH TEAM ROTA</div>
+                    <div class="banner-subtitle" id="sunday-banner-subtitle"></div>
+                  </div>
+                  <div class="sunday-table-wrap">
+                    <table class="rota-table sunday-table" id="sunday-table">
+                      <colgroup id="sunday-colgroup"></colgroup>
+                      <thead id="sunday-thead"></thead>
+                      <tbody id="sunday-tbody"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <footer class="preview-card__footer">
+                <button type="button" id="btn-regenerate-sunday" class="btn btn-secondary" disabled>Regenerate</button>
+                <button type="button" id="btn-export-sunday" class="btn btn-primary" disabled>Export PNG</button>
+              </footer>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="main.js"></script>
+  </body>
+</html>
